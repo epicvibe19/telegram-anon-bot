@@ -1,3 +1,6 @@
+import os
+import threading
+from flask import Flask
 import telebot
 from telebot import types
 
@@ -154,5 +157,22 @@ def handle_admin_reply(message):
         
         del admin_reply_targets[admin_id]
 
-print("Бот запущен и готов к работе...")
-bot.infinity_polling()
+
+# --- МИНИ-СЕРВЕР ДЛЯ RENDER ---
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+if __name__ == "__main__":
+    # Запускаем Flask в отдельном потоке, чтобы он занимал порт для Render
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+
+    print("Бот запущен и готов к работе...")
+    bot.infinity_polling()
